@@ -70,6 +70,13 @@ func AddTemplate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// here is to avoid a bug:
+	// when current request is invoked by the 'Copy Template' page, value of the 'id' field will be the id of
+	// the copied template, not zero. This will lead the backend finally overwrites the copied template！！！
+	//
+	// so hero we ensure value of id to be zero
+	template.ID = 0
+
 	template.ProjectID = project.ID
 	newTemplate, err := helpers.Store(r).CreateTemplate(template)
 
