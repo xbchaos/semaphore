@@ -3,7 +3,7 @@
 set -e
 
 # Get prerequisites for building the app
-(cd $(go env GOPATH) && curl -sL https://taskfile.dev/install.sh | sh)
+go install github.com/go-task/task/v3/cmd/task@latest
 
 # Compile and build
 task deps

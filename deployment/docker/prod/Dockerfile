@@ -1,6 +1,14 @@
 # ansible-semaphore production image
 FROM golang:1.18.3-alpine3.16 as builder
 
+# replace the default repository address of alpine, if specified
+ARG ALPINE_REPOSITORY_MIRROR
+RUN if [ "$ALPINE_REPOSITORY_MIRROR" != "" ]; then sed -i "s/dl-cdn.alpinelinux.org/$ALPINE_REPOSITORY_MIRROR/g" /etc/apk/repositories; fi
+
+# set the GOPROXY environment, if specified
+ARG GOPROXY
+RUN if [ "$GOPROXY" != "" ]; then go env -w GO111MODULE=on GOPROXY=$GOPROXY; fi
+
 COPY ./ /go/src/github.com/ansible-semaphore/semaphore
 WORKDIR /go/src/github.com/ansible-semaphore/semaphore
 
@@ -9,6 +17,10 @@ RUN apk add --no-cache -U libc-dev curl nodejs npm git gcc g++ && \
 
 FROM alpine:3.16 as runner
 LABEL maintainer="Tom Whiston <tom.whiston@gmail.com>"
+
+# again, replace the default repository address of alpine, if specified
+ARG ALPINE_REPOSITORY_MIRROR
+RUN if [ "$ALPINE_REPOSITORY_MIRROR" != "" ]; then sed -i "s/dl-cdn.alpinelinux.org/$ALPINE_REPOSITORY_MIRROR/g" /etc/apk/repositories; fi
 
 RUN apk add --no-cache sshpass git curl ansible mysql-client openssh-client-default tini py3-aiohttp && \
     adduser -D -u 1001 -G root semaphore && \
